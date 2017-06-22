@@ -21,8 +21,8 @@ second vector.  Any non-relevant data columns will not be output.
 import pandas as pd
 import numpy as np
 
-def _validate_file(path):
-    """Validate the format of the input data"""
+def _validate_data(dataFrame):
+    """Validate the format of the input data (prior to cleaning)"""
     pass
 
 def _dummy(dataFrame, column):
@@ -56,4 +56,14 @@ def _normalize(dataFrame, column, min_val=None, max_val=None):
 
 def parse_data(path):
     """Cleans and prepares the data to be used in the  model"""
-    pass
+    dataArray = pd.read_csv(path)
+    _validate_data(dataArray)
+    dataArray = _dummy(dataArray, 'Pclass')
+    dataArray = _dummy(dataArray, 'Sex')
+    dataArray = _normalize(dataArray, 'Age', 0, 100)
+    # [[[Need to standardize this normalization across the training and input
+    # data]]]
+    dataArray = _normalize(dataArray, 'SibSp')
+    dataArray = _normalize(dataArray, 'Parch')
+    dataArray = _normalize(dataArray, 'Fare')
+    return dataArray

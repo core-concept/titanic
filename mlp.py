@@ -21,7 +21,30 @@ def test_model(training_data, layers, subset_pct=.8, iterations=1):
     `subset_pct`: percentage of training data to use for training the model
     `iterations`: number of test iterations performed
     """
-    pass
+    print('Parsing data......', end='')
+    trainingData = prep.parse_data(training_data)
+    trainingData = trainingData.fillna(value=0) # Placeholder - must assign NaNs
+    print('DONE')
+    correct = 0
+    total = 0
+    for i in range(iterations):
+        print('Iteration {}...'.format(i+1), end='')
+        sample = trainingData.sample(frac=subset_pct)
+        complement = trainingData[~trainingData.index.isin(sample.index)]
+        X = sample[[1, 2, 'male', 'n(Age)', 'n(SibSp)', 'n(Parch)', 'n(Fare)']]
+        y = sample[['Survived']]
+        Z = complement[[1, 2, 'male', 'n(Age)', 'n(SibSp)', 'n(Parch)',
+                       'n(Fare)']]
+        mlp = MLPClassifier(solver='lbfgs', alpha=1e-5,
+                            hidden_layer_sizes=layers, random_state=1)
+        mlp.fit(X, y)
+        prediction = mlp.predict(Z)
+        total += len(prediction)
+        correct += len(prediction) - sum(abs(complement['Survived'] - prediction))
+        print('DONE')
+    print('Testing complete: {} of {} survivors correctly predicted accurately.'
+          .format(correct, total))
+    print('Accuracy: {0:.2f}%'.format(correct/total))
 
 def run_model(training_data, prediction_data, output_file, layers):
     """Runs the model and creates an output file with survival predictions
